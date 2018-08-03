@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>聊天室</title>
+	<meta charset="utf8">
+</head>
+<body>
+	<div id="box">
+		
+		<div id="left" style="width: 40%;height: 500px;border: 1px solid #000;overflow:scroll;float: left;display: inline-block;position:relative;">
+			<div v-for="(value, key) in lists">
+			  {{ value.msg }}
+			</div>
+					<div id="chat" style="position:absolute;left;0;bottom:0;">
+			
+			<!-- <button v-on:click="addme">jejejj</button> -->
+			
+			<input type="text" v-model="message">
+			<button v-on:click="sendmsg">发送消息</button>
+		</div>
+		</div>
+
+		<div id="right" style="width: 30%;height: 500px;border: 1px solid #000;overflow:scroll;float: left;display: inline-block;">
+			<div v-for="(value, key) in users">
+			  {{ value.name }}
+			</div>
+		</div>
+
+	</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
+<script>
+
+
+	window.onload=function (){
+
+	    var juge = getCookie('username');
+	    if(juge == ''){
+	    	alert('用户尚未登录');
+
+	    	window.location.href="./login.html";
+	    }
+
+
+	}
+
+	// var lo = 
+
+	var wsl = "ws://192.168.1.6:9501";
+	var	ws = new WebSocket(wsl);
+
+
+	ws.onopen = function(evt) {
+		console.log("Connection open ...");
+		// ws.send("Hello WebSockets!");
+	};
+	 
+	 
+	ws.onclose = function(evt) {
+		console.log("Connection closed.");
+	};
+
+	 //设置cookie
+      function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            console.info(cname + "=" + cvalue + "; " + expires);
+            document.cookie = cname + "=" + cvalue + "; " + expires;
+            console.info(document.cookie);
+        }
+        //获取cookie
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1);
+                if (c.indexOf(name) != -1) return c.substring(name.length, c.length);
+            }
+            return "";
+        }
+        //清除cookie
+        function clearCookie() {
+            this.setCookie("username", "", -1);
+
+        }
+        function checkCookie() {
+            var user = this.getCookie("username");
+            if (user != "") {
+                alert("Welcome again " + user);
+            } else {
+                user = prompt("Please enter your name:", "");
+                if (user != "" && user != null) {
+                    this.setCookie("username", user, 365);
+                }
+            }
+        }
+	var vm = new Vue({
+	  el: '#box',
+	  data: {
+	    posts: [/* ... */],
+	    postFontSize: 1,
+	    value1:'geg',
+	    value2:'mmmm',
+	    message:'',
+	    lists:[],
+	    users:[]
+	  },
+	  methods:{
+	  	addme:function(){
+
+	  		this.$http.get('http://192.168.3.66:9501/njkj?message=egg',{
+		        param1:this.value1,  
+		        param2:this.value2  
+		    }).then(function(response){  
+		        // response.data中获取ResponseData实体
+		        console.log(response);
+		    },function(response){  
+		        // 发生错误
+		        console.log(response);
+		    });
+	  	},
+	  	sendmsg:function(){
+	  		if(this.message == ''){
+	  			alert('发送消息不能为空！');return;
+	  		}
+	  		ws.send(this.message);
+	  		this.lists.push({msg:'我：'+this.message});
+	  		this.message = '';
+	  	},
+	  	addUser:function(name,fd){
+	  		
+	  		this.users.push({name:name,fd:fd});
+	  	},
+	  	delUser:function(fd){
+
+	  		
+	  		for (var i = this.users.length - 1; i >= 0; i--) {
+	  			if(this.users[i].fd == fd){
+	  				this.users.splice(i,1); return;
+	  			}
+	  		}
+	  	},
+
+         	
+	  }
+	})
+
+	ws.onmessage = function(evt) {
+		console.log("Received Message: " + evt.data);
+
+		var obj = JSON.parse(evt.data);
+		// console.log(obj.type)
+		if(obj.type == 1){  // 表示新用户进来
+			
+			
+			console.log(obj);
+			
+			if(obj.users){
+				// alert('666');
+				// vm.lists = obj.users
+				for (var i = obj.users.length - 1; i >= 0; i--) {
+					vm.addUser(obj.users[i].name,obj.users[i].fd);
+				}
+			}else{
+				vm.addUser(obj.name,obj.fd);
+			}
+
+			vm.lists.push({msg: obj.name+'进入了聊天室..'});
+			return;
+		}
+		if(obj.type == 2){  // 表示有用户退出
+
+			vm.delUser(obj.fd);
+			vm.lists.push({msg: obj.name+'退出了聊天室..'});return;
+		}
+		if(obj.type == 3){  // 表示聊天消息
+			vm.lists.push({msg: obj.name+'：'+obj.msg});return;
+		}
+
+
+		// ws.close();
+	};
+</script>
+</html>

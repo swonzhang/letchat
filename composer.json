@@ -1,0 +1,15 @@
+{
+	"require":{
+
+		"swonzhang/swon": "dev-master",
+		"swonzhang/role-rbac": "*",
+		"illuminate/database": "^5.7@dev"
+
+	},
+	"minimum-stability":"dev",
+	"autoload":{
+		"psr-4":{
+			"App\\":"app/"
+		}
+	}
+}

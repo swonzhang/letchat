@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<meta charset="utf8">
+<body>
+<div id="gg">
+<!-- 	<div id="app-7">
+	  <ol>
+
+	    <todo-item
+	      v-for="item in groceryList"
+	      v-bind:todo="item"
+	      v-bind:key="item.id">
+	    </todo-item>
+	  </ol>
+	</div> -->
+	<component v-bind:is="todo-item"></component>
+<!-- 	<div id="components-demo">
+	  <button-counter></button-counter>
+	</div> -->
+</div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script>
+
+	// 定义名为 todo-item 的新组件
+	Vue.component('todo-item', {
+	  props: ['groceryList'],
+ 	  template: '<li>{{ todo.text }}</li>'
+	})
+
+	// 定义一个名为 button-counter 的新组件
+	Vue.component('button-counter', {
+	  data: function () {
+	    return {
+	      count: 0
+	    }
+	  },
+	  template: 'egeg'
+	  // template: '<button v-on:click="count++">You clicked me {{ count }} times.</button>'
+	})
+
+
+
+	var app7 = new Vue({
+	  el: '#gg',
+	  data: {
+	    groceryList: [
+	      { id: 0, text: '蔬菜' },
+	      { id: 1, text: '奶酪' },
+	      { id: 2, text: '随便其它什么人吃的东西' }
+	    ]
+	  }
+	})
+</script>
+</html>
